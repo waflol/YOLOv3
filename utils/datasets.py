@@ -10,12 +10,8 @@ import torch
 import yaml
 from PIL import Image, ImageFile
 from torch.utils.data import Dataset, DataLoader
-from utils import (
-    cells_to_bboxes,
-    iou_width_height as iou,
-    non_max_suppression as nms,
-    plot_image
-)
+from utils.torch_utils import *
+from utils.general import *
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
@@ -62,7 +58,7 @@ class YOLODataset(Dataset):
         targets = [torch.zeros((self.num_anchors // 3, S, S, 6)) for S in self.S] # [p_0,x,y,w,h,c]
 
         for box in bboxes:
-            iou_anchors = iou(torch.tensor(box[2:4]), self.anchors)
+            iou_anchors = intersection_over_union(torch.tensor(box[2:4]), self.anchors)
             anchor_indices = iou_anchors.argsort(descending=True, dim=0)
             x, y, width, height, class_label = box
             has_anchor = [False] * 3  # each scale should have one anchor

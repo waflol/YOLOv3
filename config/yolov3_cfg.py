@@ -3,13 +3,13 @@ import cv2
 import torch
 
 from albumentations.pytorch import ToTensorV2
-from utils import seed_everything
+from utils.torch_utils import seed_everything
 
 DATASET = 'datasets'
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 # seed_everything()  # If you want deterministic behavior
 NUM_WORKERS = 4
-BATCH_SIZE = 32
+BATCH_SIZE = 4
 IMAGE_SIZE = 416
 NUM_CLASSES = 20
 LEARNING_RATE = 1e-5
@@ -20,7 +20,7 @@ MAP_IOU_THRESH = 0.5
 NMS_IOU_THRESH = 0.45
 S = [IMAGE_SIZE // 32, IMAGE_SIZE // 16, IMAGE_SIZE // 8]
 PIN_MEMORY = True
-LOAD_MODEL = True
+LOAD_MODEL = False
 SAVE_MODEL = True
 CHECKPOINT_FILE = "checkpoint.pth.tar"
 IMG_DIR = DATASET + "/images/"

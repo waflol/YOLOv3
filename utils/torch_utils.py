@@ -2,7 +2,7 @@ import torch
 import torch.distributed as dist
 import torch.nn as nn
 import torch.nn.functional as F
-import config
+from config import yolov3_cfg as configs
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import numpy as np
@@ -248,7 +248,7 @@ def mean_average_precision(
 def plot_image(image, boxes):
     """Plots predicted bounding boxes on the image"""
     cmap = plt.get_cmap("tab20b")
-    class_labels = config.COCO_LABELS if config.DATASET=='COCO' else config.PASCAL_CLASSES
+    class_labels = configs.COCO_LABELS if configs.DATASET=='COCO' else configs.PASCAL_CLASSES
     colors = [cmap(i) for i in np.linspace(0, 1, len(class_labels))]
     im = np.array(image)
     height, width, _ = im.shape
@@ -393,12 +393,12 @@ def check_class_accuracy(model, loader, threshold):
     tot_obj, correct_obj = 0, 0
 
     for idx, (x, y) in enumerate(tqdm(loader)):
-        x = x.to(config.DEVICE)
+        x = x.to(configs.DEVICE)
         with torch.no_grad():
             out = model(x)
 
         for i in range(3):
-            y[i] = y[i].to(config.DEVICE)
+            y[i] = y[i].to(configs.DEVICE)
             obj = y[i][..., 0] == 1 # in paper this is Iobj_i
             noobj = y[i][..., 0] == 0  # in paper this is Iobj_i
 
@@ -445,7 +445,7 @@ def save_checkpoint(model, optimizer, filename="my_checkpoint.pth.tar"):
 
 def load_checkpoint(checkpoint_file, model, optimizer, lr):
     print("=> Loading checkpoint")
-    checkpoint = torch.load(checkpoint_file, map_location=config.DEVICE)
+    checkpoint = torch.load(checkpoint_file, map_location=configs.DEVICE)
     model.load_state_dict(checkpoint["state_dict"])
     optimizer.load_state_dict(checkpoint["optimizer"])
 
@@ -456,55 +456,55 @@ def load_checkpoint(checkpoint_file, model, optimizer, lr):
 
 
 def get_loaders(train_csv_path, test_csv_path):
-    from dataset import YOLODataset
+    from utils.datasets import YOLODataset
 
-    IMAGE_SIZE = config.IMAGE_SIZE
+    IMAGE_SIZE = configs.IMAGE_SIZE
     train_dataset = YOLODataset(
         train_csv_path,
-        transform=config.train_transforms,
+        transform=configs.train_transforms,
         S=[IMAGE_SIZE // 32, IMAGE_SIZE // 16, IMAGE_SIZE // 8],
-        img_dir=config.IMG_DIR,
-        label_dir=config.LABEL_DIR,
-        anchors=config.ANCHORS,
+        img_dir=configs.IMG_DIR,
+        label_dir=configs.LABEL_DIR,
+        anchors=configs.ANCHORS,
     )
     test_dataset = YOLODataset(
         test_csv_path,
-        transform=config.test_transforms,
+        transform=configs.test_transforms,
         S=[IMAGE_SIZE // 32, IMAGE_SIZE // 16, IMAGE_SIZE // 8],
-        img_dir=config.IMG_DIR,
-        label_dir=config.LABEL_DIR,
-        anchors=config.ANCHORS,
+        img_dir=configs.IMG_DIR,
+        label_dir=configs.LABEL_DIR,
+        anchors=configs.ANCHORS,
     )
     train_loader = DataLoader(
         dataset=train_dataset,
-        batch_size=config.BATCH_SIZE,
-        num_workers=config.NUM_WORKERS,
-        pin_memory=config.PIN_MEMORY,
+        batch_size=configs.BATCH_SIZE,
+        num_workers=configs.NUM_WORKERS,
+        pin_memory=configs.PIN_MEMORY,
         shuffle=True,
         drop_last=False,
     )
     test_loader = DataLoader(
         dataset=test_dataset,
-        batch_size=config.BATCH_SIZE,
-        num_workers=config.NUM_WORKERS,
-        pin_memory=config.PIN_MEMORY,
+        batch_size=configs.BATCH_SIZE,
+        num_workers=configs.NUM_WORKERS,
+        pin_memory=configs.PIN_MEMORY,
         shuffle=False,
         drop_last=False,
     )
 
     train_eval_dataset = YOLODataset(
         train_csv_path,
-        transform=config.test_transforms,
+        transform=configs.test_transforms,
         S=[IMAGE_SIZE // 32, IMAGE_SIZE // 16, IMAGE_SIZE // 8],
-        img_dir=config.IMG_DIR,
-        label_dir=config.LABEL_DIR,
-        anchors=config.ANCHORS,
+        img_dir=configs.IMG_DIR,
+        label_dir=configs.LABEL_DIR,
+        anchors=configs.ANCHORS,
     )
     train_eval_loader = DataLoader(
         dataset=train_eval_dataset,
-        batch_size=config.BATCH_SIZE,
-        num_workers=config.NUM_WORKERS,
-        pin_memory=config.PIN_MEMORY,
+        batch_size=configs.BATCH_SIZE,
+        num_workers=configs.NUM_WORKERS,
+        pin_memory=configs.PIN_MEMORY,
         shuffle=False,
         drop_last=False,
     )
